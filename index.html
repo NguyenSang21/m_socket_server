@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Master server</title>
+</head>
+<body>
+    <div style="width: 49%;float: left;border-right: 2px solid black;height: 100%">
+        <h1 style="text-align: center">Files on File Servers</h1>
+        <p>File server 1</p>
+        <div>
+            <table id='file_content' style="width: 100%"></table>
+        </div>
+        <p>File server 2</p>
+        <div>
+            <table id='file_content1' style="width: 100%">
+                <tr style="text-align: center">
+                    <th> File name </th>
+                    <th> Size </th>
+                    <th> Extension </th>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div style="width: 50%;float: left;height: 100%">
+        <div>
+            <h1 style="text-align: center">Upload your files</h1>
+        </div>
+        <div>
+            <div style="width: 50%;float:left">
+                <p style="text-align: center">Find files to download</p>
+                <div style="text-align: center">
+                    <input type="text" name="filename" id='filename' placeholder="Type a file name here">
+                    <input type="button" name="search" id='search' value="Search">
+                </div>
+            </div>
+            <div style="width: 50%;float: left">
+                <form action="http://10.10.223.226:4000/fileupload" method="post" enctype="multipart/form-data">
+                    <input type="file" name="filetoupload"><br>
+                    <input type="submit" value="Upload">
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io.connect('http://localhost:2020');
+  const urlToGetAllFiles = 'http://10.10.223.226:4000/getAllFilesFromFolder';
+  const urlDownLoad = 'http://10.10.223.226:4000/download';
+
+  socket.on('file_data', (data) => {
+    console.log(data.data);
+    if (data.data.length !== []) {
+      const header_table = '<tr style="text-align: center">\n' +
+        '<th> File name </th>' +
+        '<th> Size </th>' +
+        '<th> Extension </th>' +
+        '</tr>';
+      $('#file_content').empty().append(header_table);
+      data.data.map((element) => {
+        const createParams = '?file_name=' + element.fileName
+        let content = buildTd('<a style="text-align: center" href=' + urlDownLoad + createParams + '>' + element.fileName + '</a>');
+        content += buildTd('<p style="text-align: center">' + element.size + ' KB' + '</p>');
+        content += buildTd('<p style="text-align: center">' + element.ext + '</p>');
+        $('#file_content').append('<tr>' + content + '<tr>');
+      })
+    }
+  });
+
+  const buildTd = function(content){
+    return '<td>' + content + '</td>';
+  }
+</script>
+</html>
