@@ -1,7 +1,6 @@
 const express = require('express')
 const app = express()
 const port = 2020
-const fs = require('fs')
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
 const ioClient = require('socket.io-client');
